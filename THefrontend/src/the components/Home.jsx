@@ -15,6 +15,7 @@ import { FiUser } from "react-icons/fi";
 import { hover } from "framer-motion";
 import {motion} from "framer-motion";
 export function Home() {
+
   if (!localStorage.getItem("token")) {
     window.location.href = "/Signin";
   }
@@ -36,13 +37,12 @@ export function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [user, setUser] = useState({ name: "Username", isSignedIn: false });
-  // Controls edit mode in the expanded note view.
+ 
   const [isEditing, setIsEditing] = useState(false);
-  // Modal states for creating a new note and fullscreen image view.
   const [showNewNoteModal, setShowNewNoteModal] = useState(false);
   const [fullscreenImage, setFullscreenImage] = useState(null);
 
-  // Refs for speech recognition, audio recording, timer, and auto-stop timeout.
+ 
   const recognitionRef = useRef(null);
   const timeoutRef = useRef(null);
   const mediaRecorderRef = useRef(null);
@@ -51,9 +51,6 @@ export function Home() {
   const [loading, setLoading] = useState(false);
   const [sortCriteria, setSortCriteria] = useState("dateAsc");
 
-  // -------------------------------
-  // FETCH NOTES ON COMPONENT MOUNT
-  // -------------------------------
   useEffect(() => {
     const fetchNotes = async () => {
       try {
@@ -96,9 +93,6 @@ export function Home() {
     );
   }
 
-  // -------------------------------
-  // Helper: Updates recording result to either newNote or selectedNote
-  // -------------------------------
   const updateRecordingResult = (data) => {
     if (isEditing && selectedNote) {
       setSelectedNote((prev) => ({ ...prev, ...data }));
