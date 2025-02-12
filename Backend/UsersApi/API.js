@@ -4,9 +4,70 @@ const app = express();
 const { Generatetoken, Authenticator } = require("./TheMiddleware");
 const { User, Note } = require("../Database/schema.js");
 const jwt = require("jsonwebtoken");
-const cors=require("cors")
+const cors = require("cors");
 app.use(cors());
 app.use(express.json());
+const multer = require("multer");
+const path = require("path");
+
+// Configure storage for image and audio files separately
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    if (file.fieldname === "image") {
+      cb(null, "uploads/images"); // Folder for images
+    } else if (file.fieldname === "audio") {
+      cb(null, "uploads/audio"); // Folder for audio files
+    }
+  },
+  filename: function (req, file, cb) {
+    // Use the current timestamp plus the original file name to avoid collisions
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  },
+});
+const upload = multer({ storage });
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// Use upload.fields to handle multiple file fields:
+app.post(
+  "/notes/add",
+  Authenticator,
+  upload.fields([
+    { name: "image", maxCount: 1 },
+    { name: "audio", maxCount: 1 },
+  ]),
+  async function (req, res) {
+    try {
+     
+
+      // Ensure required fields exist
+      if (!req.body.title || !req.body.text) {
+        return res.status(400).json({ message: "Title and text are required" });
+      }
+
+      const imagePath = req.files?.image
+        ? req.files.image[0].path.replace(/\\/g, "/")
+        : null;
+      const audioPath = req.files?.audio
+        ? req.files.audio[0].path.replace(/\\/g, "/")
+        : null;
+
+      const note = new Note({
+        title: req.body.title,
+        text: req.body.text,
+        transcription: req.body.transcription,
+        image: imagePath ? `http://localhost:3000/${imagePath}` : null, // Set to `null` if no image
+        audio: audioPath ? `http://localhost:3000/${audioPath}` : null, // Set to `null` if no audio
+        user: req.data,
+      });
+      await note.save();
+      res.json({ message: "Note added", note });
+    } catch (e) {
+      res.status(500).json({ message: e.message });
+    }
+  }
+);
 
 app.post("/signup", function (req, res) {
   req.body.email;
@@ -20,54 +81,40 @@ app.post("/signup", function (req, res) {
       res.json({ message: "user created" });
     });
   }
-});//b
+}); //b
 app.post("/login", async function (req, res) {
   if (req.body.email) {
-    const datass=await User.findOne({email:req.body.email})
-      if (datass) {
-        if (datass.password === req.body.password) {
-          const tkn = Generatetoken(req.body.email);
-        
-          res.json({ message: "login success", token: tkn });
-        }
-       else {
+    const datass = await User.findOne({ email: req.body.email });
+    if (datass) {
+      if (datass.password === req.body.password) {
+        const tkn = Generatetoken(req.body.email);
+
+        res.json({ message: "login success", token: tkn });
+      } else {
         res.json({ message: "login failed not correct email or password" });
       }
     }
-}
-    else {
-      res.json({ message: "user not found" });
-    }   
-    });
-
-app.post("/notes/add", Authenticator,async function (req, res) {
-  try { 
-    const note = new Note({
-      title: req.body.title,
-      text: req.body.text,
-      transcription: req.body.transcription,
-      image: req.body.image,
-      audio: req.body.audio,
-      user: req.data,
-    });
-    note.save().then(() => {
-      res.json({ message: "note added" });
-    });
-  } catch (e) {
-    res.json({ message: e.message });
+  } else {
+    res.json({ message: "user not found" });
   }
 });
-app.get("/notes",Authenticator,async function (req, res) {
+
+app.get("/notes", Authenticator, async function (req, res) {
   try {
     const notes = await Note.find({ user: req.data });
-   
-    res.set("Content-Type", "image/jpeg","audio/mp3"); 
-    res.json(notes);
+
+    const updatedNotes = notes.map((note) => ({
+      ...note._doc,
+      image: note.image ? note.image : null,
+      audio: note.audio ? note.audio : null,
+    }));
+    res.json(updatedNotes);
   } catch (e) {
     res.json({ message: e.message });
   }
 });
-app.post("/notes/favourite/:id",Authenticator, async (req, res) => {
+
+app.post("/notes/favourite/:id", Authenticator, async (req, res) => {
   try {
     const note = await Note.findByIdAndUpdate(
       req.params.id,
@@ -79,7 +126,7 @@ app.post("/notes/favourite/:id",Authenticator, async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
-app.post("/notes/unfavourite/:id",Authenticator, async (req, res) => {
+app.post("/notes/unfavourite/:id", Authenticator, async (req, res) => {
   try {
     const note = await Note.findByIdAndUpdate(
       req.params.id,
@@ -92,14 +139,64 @@ app.post("/notes/unfavourite/:id",Authenticator, async (req, res) => {
   }
 });
 
-app.get("/notes/favourites/:user",Authenticator, async (req, res) => {
+app.get("/notes/favourites/:user", Authenticator, async (req, res) => {
   try {
-    const favNotes = await Note.find({ user: req.params.user, favourite: true });
+    const favNotes = await Note.find({
+      user: req.params.user,
+      favourite: true,
+    });
     res.json(favNotes);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
+app.put(
+  "/notes/:id",
+  upload.fields([
+    { name: "image", maxCount: 1 },
+    { name: "audio", maxCount: 1 },
+  ]),
+  async function (req, res) {
+    try {
+     
+
+      let note = await Note.findById(req.params.id);
+      if (!note) {
+        return res.status(404).json({ message: "Note not found" });
+      }
+
+      const updateFields = {
+        title: req.body.title || note.title,
+        text: req.body.text || note.text,
+        transcription: req.body.transcription || note.transcription,
+      };
+
+      if (req.files?.image) {
+        updateFields.image = `http://localhost:3000/${req.files.image[0].path.replace(
+          /\\/g,
+          "/"
+        )}`;
+      }
+
+      if (req.files?.audio) {
+        updateFields.audio = `http://localhost:3000/${req.files.audio[0].path.replace(
+          /\\/g,
+          "/"
+        )}`;
+      }
+
+      note = await Note.findByIdAndUpdate(req.params.id, updateFields, {
+        new: true,
+      });
+
+      res.json({ message: "Note updated", note });
+    } catch (e) {
+    
+      res.status(500).json({ message: e.message });
+    }
+  }
+);
+
 app.delete("/notes/:id", async (req, res) => {
   try {
     const note = await Note.findByIdAndDelete(req.params.id);
@@ -112,34 +209,6 @@ app.delete("/notes/:id", async (req, res) => {
   }
 });
 
-app.get("/notes/:title", Authenticator, async function (req, res) {
-    try {
-        const note = await Note.findOne({ title: req.params.title });
-        res.json(note);
-    } catch (e) {   
-        res.json({ message: e.message });}})
-
-        app.delete("/notes/:_id", Authenticator, async function (req, res) {
-            try {
-                await Note.deleteOne({ _id: req.params._id });
-                res.json({ message: "note deleted" });
-            } catch (e) {
-                res.json({ message: e.message });
-            }
-        });
-
-        app.put("/notes/:_id", Authenticator, async function (req, res) {
-            try {
-                await Note.updateOne({ _id: req.params._id }, { $set: req.body });
-                res.json({ message: "note updated" });
-            } catch (e) {
-                res.json({ message: e.message });
-            }
-        });
-
-
 app.listen(3000, function () {
   console.log("server is running");
 });
-
-

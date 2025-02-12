@@ -3,25 +3,24 @@ import {
   FiSearch,
   FiMic,
   FiTrash2,
-  
   FiVolume2,
   FiPlus,
   FiX,
   FiImage,
 } from "react-icons/fi";
-import { FaRegCopy} from "react-icons/fa";
+import { FaRegCopy } from "react-icons/fa";
 import { FaStar } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
 import { FiUser } from "react-icons/fi";
 import { hover } from "framer-motion";
 
 export function Home() {
-
-  if(!localStorage.getItem("token")){
-    window.location.href = "/Signin";}
+  if (!localStorage.getItem("token")) {
+    window.location.href = "/Signin";
+  }
   const [notes, setNotes] = useState([]);
   // Add this state at the top along with your other useState hooks
-const [showFavourites, setShowFavourites] = useState(false);
+  const [showFavourites, setShowFavourites] = useState(false);
 
   // newNote now includes transcription, image, and audio properties.
   const [newNote, setNewNote] = useState({
@@ -35,7 +34,7 @@ const [showFavourites, setShowFavourites] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [selectedNote, setSelectedNote] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [searchTerm,setSearchTerm]=useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [user, setUser] = useState({ name: "Username", isSignedIn: false });
   // Controls edit mode in the expanded note view.
   const [isEditing, setIsEditing] = useState(false);
@@ -49,7 +48,7 @@ const [showFavourites, setShowFavourites] = useState(false);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const recordingIntervalRef = useRef(null);
-  const [loading,setLoading]=useState(false);
+  const [loading, setLoading] = useState(false);
   const [sortCriteria, setSortCriteria] = useState("dateAsc");
 
   // -------------------------------
@@ -58,22 +57,22 @@ const [showFavourites, setShowFavourites] = useState(false);
   useEffect(() => {
     const fetchNotes = async () => {
       try {
-        setLoading(true)
-        const response = await fetch("http://localhost:3000/notes",{
+        setLoading(true);
+        const response = await fetch("http://localhost:3000/notes", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         });
-        
-        setLoading(false)
+
+        setLoading(false);
         const data = await response.json();
-        console.log("Fetched data:", data);
-        if(data.message === "unauthorized"||data.message === "jwt expired"){
+
+        if (data.message === "unauthorized" || data.message === "jwt expired") {
           localStorage.removeItem("token");
           window.location.href = "/Signin";
         }
-        setNotes(data); 
-        console.log(data)
+        setNotes(data);
+
         setUser({ name: data[0].user, isSignedIn: true });
       } catch (err) {
         console.error("Error fetching notes", err);
@@ -81,23 +80,21 @@ const [showFavourites, setShowFavourites] = useState(false);
     };
     fetchNotes();
   }, []);
-  
+
   if (loading) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-transparent backdrop-blur-md">
-      <div
-        className="w-20 h-20 rounded-full animate-spin"
-        style={{
-          border: '6px solid rgba(255,255,255,0.1)', // light, almost transparent border
-          borderTopColor: '#39FF14', // neon green for the top border
-          boxShadow: '0 0 15px #39FF14, 0 0 30px #39FF14', // neon glow effect
-        }}
-      ></div>
-    </div>
+        <div
+          className="w-20 h-20 rounded-full animate-spin"
+          style={{
+            border: "6px solid rgba(255,255,255,0.1)", // light, almost transparent border
+            borderTopColor: "#39FF14", // neon green for the top border
+            boxShadow: "0 0 15px #39FF14, 0 0 30px #39FF14", // neon glow effect
+          }}
+        ></div>
+      </div>
     );
   }
-
-  
 
   // -------------------------------
   // Helper: Updates recording result to either newNote or selectedNote
@@ -116,11 +113,7 @@ const [showFavourites, setShowFavourites] = useState(false);
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setNewNote((prev) => ({ ...prev, image: reader.result }));
-      };
-      reader.readAsDataURL(file);
+      setNewNote((prev) => ({ ...prev, image: file })); // Store File object directly
     }
   };
 
@@ -149,67 +142,129 @@ const [showFavourites, setShowFavourites] = useState(false);
         method: "DELETE",
       });
       const data = await response.json();
-      console.log(data.message);
+
       // Update local state: filter out the deleted note
       setNotes((prevNotes) => prevNotes.filter((note) => note._id !== id));
     } catch (err) {
       console.error("Error deleting note:", err);
     }
-    
   };
 
   const speakText = (text) => {
     const speech = new SpeechSynthesisUtterance(text);
     window.speechSynthesis.speak(speech);
   };
- 
 
   // -------------------------------
   // API: Create Note Function
   // -------------------------------
   const createNote = async () => {
-    if(!newNote.title){
+    if (!newNote.title) {
       alert("Title is required");
       return;
     }
-    // If recording is active, stop it first.
-    if (isRecording) {
-      stopRecording();
-      await new Promise((resolve) => setTimeout(resolve, 500));
+    if (!newNote.text) {
+      alert("Note is required");
+      return;
     }
-    const noteData = {
-      title: newNote.title,
-      text: newNote.text,
-      transcription: newNote.transcription,
-      image: newNote.image,
-      audio: newNote.audio,
-    };
 
-    try {setLoading(true)
+    const formData = new FormData();
+    formData.append("title", newNote.title);
+    formData.append("text", newNote.text);
+    formData.append("transcription", newNote.transcription || "");
+    formData.append("user", user.name);
+
+    if (newNote.image instanceof File) {
+      formData.append("image", newNote.image);
+    }
+
+    if (newNote.audio instanceof File) {
+      formData.append("audio", newNote.audio);
+    }
+
+    try {
+      setLoading(true);
       const response = await fetch("http://localhost:3000/notes/add", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify(noteData),
+        body: formData, // Send formData instead of JSON
       });
-      setLoading(false)
+
+      setLoading(false);
       const result = await response.json();
-      console.log(result);
-      if(result.message === "unauthorized"||result.message === "jwt expired"){
+
+      if (
+        result.message === "unauthorized" ||
+        result.message === "jwt expired"
+      ) {
         localStorage.removeItem("token");
         window.location.href = "/Signin";
       }
-      // Optionally, re-fetch notes from the API or append the new note locally.
-      setNotes((prev) => [
-        ...prev,
-        { ...noteData, id: Date.now(), date: new Date().toLocaleString() },
-      ]);
-      setNewNote({ title: "", text: "", transcription: "", image: "", audio: "" });
+
+      // Update UI with new note
+      setNotes((prev) => [...prev, result.note]);
+      setNewNote({
+        title: "",
+        text: "",
+        transcription: "",
+        image: "",
+        audio: "",
+      });
       setShowNewNoteModal(false);
     } catch (err) {
       console.error("Error creating note:", err);
+    }
+  };
+  const updateNote = async (id) => {
+    if (!selectedNote.title) {
+      alert("Title is required");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("title", selectedNote.title);
+    formData.append("text", selectedNote.text);
+    formData.append("transcription", selectedNote.transcription || "");
+
+    if (selectedNote.image instanceof File) {
+      formData.append("image", selectedNote.image);
+    }
+
+    if (selectedNote.audio instanceof File) {
+      formData.append("audio", selectedNote.audio);
+    }
+
+    try {
+      setLoading(true);
+      const response = await fetch(`http://localhost:3000/notes/${id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: formData, // FormData handles file upload
+      });
+
+      setLoading(false);
+      const result = await response.json();
+
+      if (
+        result.message === "unauthorized" ||
+        result.message === "jwt expired"
+      ) {
+        localStorage.removeItem("token");
+        window.location.href = "/Signin";
+      }
+
+      // ✅ Update UI with edited note
+      setNotes((prev) =>
+        prev.map((note) => (note._id === id ? result.note : note))
+      );
+      setSelectedNote(null);
+      setIsEditing(false);
+    } catch (err) {
+      console.error("Error updating note:", err);
     }
   };
 
@@ -218,7 +273,9 @@ const [showFavourites, setShowFavourites] = useState(false);
   // -------------------------------
   const startRecording = async () => {
     if (!("webkitSpeechRecognition" in window) || !navigator.mediaDevices) {
-      alert("Your browser does not support audio recording or speech recognition.");
+      alert(
+        "Your browser does not support audio recording or speech recognition."
+      );
       return;
     }
     try {
@@ -232,9 +289,13 @@ const [showFavourites, setShowFavourites] = useState(false);
         }
       };
       mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
-        const audioUrl = URL.createObjectURL(audioBlob);
-        updateRecordingResult({ audio: audioUrl });
+        const audioBlob = new Blob(audioChunksRef.current, {
+          type: "audio/webm",
+        });
+        const audioFile = new File([audioBlob], "recorded_audio.webm", {
+          type: "audio/webm",
+        });
+        updateRecordingResult({ audio: audioFile }); // Store File object instead of URL
       };
       mediaRecorder.start();
     } catch (error) {
@@ -264,7 +325,10 @@ const [showFavourites, setShowFavourites] = useState(false);
       setIsRecording(false);
       clearTimeout(timeoutRef.current);
       clearInterval(recordingIntervalRef.current);
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      if (
+        mediaRecorderRef.current &&
+        mediaRecorderRef.current.state !== "inactive"
+      ) {
         mediaRecorderRef.current.stop();
       }
     };
@@ -283,19 +347,23 @@ const [showFavourites, setShowFavourites] = useState(false);
     if (recognitionRef.current) {
       recognitionRef.current.stop();
     }
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+    if (
+      mediaRecorderRef.current &&
+      mediaRecorderRef.current.state !== "inactive"
+    ) {
       mediaRecorderRef.current.stop();
     }
     setIsRecording(false);
     clearTimeout(timeoutRef.current);
     clearInterval(recordingIntervalRef.current);
   };
-  const displayedNotes = showFavourites ? notes.filter(note => note.favourite) : notes;
+  const displayedNotes = showFavourites
+    ? notes.filter((note) => note.favourite)
+    : notes;
   const filteredNotes = displayedNotes.filter((note) =>
-    note.title.toLowerCase().includes(searchTerm.toLowerCase()));
+    note.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-
-  
   ////////
   const sortedNotes = [...filteredNotes].sort((a, b) => {
     if (sortCriteria === "dateAsc") {
@@ -319,31 +387,29 @@ const [showFavourites, setShowFavourites] = useState(false);
       <aside className="w-64 fixed top-0 left-0 h-screen  bg-white p-4 shadow-lg overflow-y-auto">
         <h2 className="text-2xl font-bold text-gray-800">AI Notes</h2>
         <nav className="mt-6">
-          <a href="/Home" className={`block py-2 px-3 mt-2 rounded-lg cursor-pointer hover:bg-purple-200 ${
-      showFavourites ? "bg-purple-50 text-white" : "bg-purple-400 text-gray-700"
-    }'`}> 
+          <a
+            href="/Home"
+            className={`block py-2 px-3 mt-2 rounded-lg cursor-pointer hover:bg-purple-200 ${
+              showFavourites
+                ? "bg-purple-50 text-white"
+                : "bg-purple-400 text-gray-700"
+            }'`}
+          >
             🏠 Home
           </a>
-        <NavLink onClick={()=>setShowFavourites(true) } className={`block py-2 px-3 rounded-lg cursor-pointer hover:bg-purple-200 ${
-      !showFavourites ? "bg-purple-50 text-blue-100" : "bg-purple-400 text-gray-700"
-    }`}
-  >
+          <NavLink
+            onClick={() => setShowFavourites(true)}
+            className={`block py-2 px-3 rounded-lg cursor-pointer hover:bg-purple-200 ${
+              !showFavourites
+                ? "bg-purple-50 text-blue-100"
+                : "bg-purple-400 text-gray-700"
+            }`}
+          >
             🌟 Favourite
           </NavLink>
-        
         </nav>
 
-
-        
-
-       
-
-       
-
-
-       
-
-       {/* /// */}
+        {/* /// */}
       </aside>
 
       {/* Main Content */}
@@ -361,17 +427,19 @@ const [showFavourites, setShowFavourites] = useState(false);
             />
           </div>
           <div className="relative w-full max-w-xs">
-  <select
-    value={sortCriteria}
-    onChange={(e) => setSortCriteria(e.target.value)}
-    className="px-2 py-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-  > Sort By
-    <option value="dateAsc">Date [Oldest First]</option>
-    <option value="dateDesc">Date [Newest First]</option>
-    <option value="titleAsc">Title [A-Z]</option>
-    <option value="titleDesc">Title [Z-A]</option>
-  </select>
-</div>
+            <select
+              value={sortCriteria}
+              onChange={(e) => setSortCriteria(e.target.value)}
+              className="px-2 py-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            >
+              {" "}
+              Sort By
+              <option value="dateAsc">Date [Oldest First]</option>
+              <option value="dateDesc">Date [Newest First]</option>
+              <option value="titleAsc">Title [A-Z]</option>
+              <option value="titleDesc">Title [Z-A]</option>
+            </select>
+          </div>
 
           <div className="relative">
             <button
@@ -382,156 +450,198 @@ const [showFavourites, setShowFavourites] = useState(false);
             </button>
             {menuOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg p-2 z-50">
-                <NavLink to="/Home" className="block px-4 py-2 hover:bg-gray-100">
+                <NavLink
+                  to="/Home"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                >
                   Home
                 </NavLink>
-              
-                <button onClick={() => {localStorage.removeItem("token");window.location.href = "/Signin";}} className="block px-4 py-2 z-1000 hover:bg-gray-100">
-              LogOut</button></div>
+
+                <button
+                  onClick={() => {
+                    localStorage.removeItem("token");
+                    window.location.href = "/Signin";
+                  }}
+                  className="block px-4 py-2 z-1000 hover:bg-gray-100"
+                >
+                  LogOut
+                </button>
+              </div>
             )}
           </div>
         </div>
 
         {/* Notes Grid */}
-          <div className="flex flex-wrap gap-2">
-            {sortedNotes.map((note) => (
-              <div
-                key={note.id}
-                className="h-80 w-72 bg-white p-4 rounded-lg shadow-lg relative cursor-pointer max-w-xs mx-auto transition transform hover:scale-105"
-                onClick={() => {
-            setSelectedNote(note);
-            setIsEditing(false);
-                }}
-              >
-                <p className="text-xs text-gray-400">{note.date}</p>
-                <h3 className="font-semibold text-lg text-gray-800">{note.title}</h3>
-                {note.audio ? (
-            <div className="mt-2">
-              <audio controls className="w-full">
-                <source src={note.audio} type="audio/mp3" />
-                Your browser does not support the audio element.
-              </audio>
-              {note.transcription && (
-                <div className="mt-1">
-                  <label className="text-sm font-medium text-gray-600">
-              Transcription:
-                  </label>
-                  <textarea
-              readOnly
-              className="w-full p-2 border rounded-lg text-gray-600 mt-1"
-              rows="2"
-              value={note.transcription}
-                  ></textarea>
+        <div className="flex flex-wrap gap-2">
+          {sortedNotes.map((note) => (
+            <div
+              key={note.id}
+              className="h-80 w-72 bg-white p-4 rounded-lg shadow-lg relative cursor-pointer max-w-xs mx-auto transition transform hover:scale-105"
+              onClick={() => {
+                setSelectedNote(note);
+                setIsEditing(false);
+              }}
+            >
+              <p className="text-xs text-gray-400">{note.date}</p>
+              <h3 className="font-semibold text-lg text-gray-800">
+                {note.title}
+              </h3>
+              {note.audio ? (
+                <div className="mt-2">
+                  <audio controls className="w-full">
+                    <source src={note.audio} type="audio/mp3" />
+                    Your browser does not support the audio element.
+                  </audio>
+                  {note.transcription && (
+                    <div className="mt-1">
+                      <label className="text-sm font-medium text-gray-600">
+                        Transcription:
+                      </label>
+                      <textarea
+                        readOnly
+                        className="w-full p-2 border rounded-lg text-gray-600 mt-1"
+                        rows="2"
+                        value={note.transcription}
+                      ></textarea>
+                    </div>
+                  )}
                 </div>
+              ) : (
+                <p className="text-gray-600 mt-2">{note.text}</p>
               )}
-            </div>
-                ) : (
-            <p className="text-gray-600 mt-2">{note.text}</p>
-                )}
-                {note.image && (
-            <img
-              src={note.image}
-              alt="Note"
-              className="mt-2 rounded-lg w-16 h-16 object-cover cursor-pointer"
-              onClick={(e) => {
-                e.stopPropagation();
-                setFullscreenImage(note.image);
-                }}
-              />
-                )}
-                 <div className="flex justify-around mt-2">
-          <button
-          onClick={async (e) => {
-            e.stopPropagation();
-            try {
-            if (note.favourite) {
-              // If already favourite, send request to remove it
-             
-              const response = await fetch(`http://localhost:3000/notes/unfavourite/${note._id}`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("token")}`
+              {note.image && (
+                <img
+                  src={note.image}
+                  alt="Note"
+                  className="mt-2 rounded-lg w-16 h-16 object-cover cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setFullscreenImage(note.image);
+                  }}
+                />
+              )}
+              <div className="flex justify-around mt-2">
+                <button
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    try {
+                      if (note.favourite) {
+                        // If already favourite, send request to remove it
 
-              },
-              });
-              
-              const data = await response.json();
-              console.log(data);
-              if(data.message === "unauthorized"||data.message === "jwt expired"){
-                localStorage.removeItem("token");
-                window.location.href = "/Signin";
-              }
-              // Update local state to mark this note as not favourite
-              setNotes((prevNotes) =>
-              prevNotes.map((n) =>
-                n._id === note._id ? { ...n, favourite: false } : n
-              )
-              );
-            } else {
-              // Otherwise, mark it as favourite
-              
-              const response = await fetch(`http://localhost:3000/notes/favourite/${note._id}`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("token")}`
-               },
-              });
-              const data = await response.json();
-              console.log(data);
-              if(data.message === "unauthorized"||data.message === "jwt expired"){
-                localStorage.removeItem("token");
-                window.location.href = "/Signin";
-              }
-              setNotes((prevNotes) =>
-              prevNotes.map((n) =>
-                n._id === note._id ? { ...n, favourite: true } : n
-              )
-              );
-            }
-            } catch (error) {
-            console.error("Error toggling favourite:", error);
-            }
-          }}
-          className="cursor-pointer hover:text-yellow-600"
-          >
-          <FaStar className={note.favourite ? "text-yellow-500" : "text-gray-40" } />
-          </button>
-          <button
-          onClick={(e) => { e.stopPropagation(); copyNote(note.text); }}
-          className="cursor-pointer text-blue-500 hover:text-blue-600  hover:border-r-violet-500  hover:border-4"
-          >
-          <FaRegCopy />
-          </button>
-          <button
-          onClick={(e) => { e.stopPropagation(); speakText(note.text); }}
-          className="cursor-pointer text-green-500 hover:text-green-600 hover:border-r-violet-500  hover:border-4"
-          >
-          <FiVolume2 />
-          </button>
-          <button
-          onClick={(e) => { e.stopPropagation(); deleteNote(note._id); }}
-          className="cursor-pointer text-red-500 hover:text-red-600 hover:border-r-violet-500  hover:border-4"
-          >
-          <FiTrash2 />
-          </button>
+                        const response = await fetch(
+                          `http://localhost:3000/notes/unfavourite/${note._id}`,
+                          {
+                            method: "POST",
+                            headers: {
+                              "Content-Type": "application/json",
+                              Authorization: `Bearer ${localStorage.getItem(
+                                "token"
+                              )}`,
+                            },
+                          }
+                        );
+
+                        const data = await response.json();
+
+                        if (
+                          data.message === "unauthorized" ||
+                          data.message === "jwt expired"
+                        ) {
+                          localStorage.removeItem("token");
+                          window.location.href = "/Signin";
+                        }
+                        // Update local state to mark this note as not favourite
+                        setNotes((prevNotes) =>
+                          prevNotes.map((n) =>
+                            n._id === note._id ? { ...n, favourite: false } : n
+                          )
+                        );
+                      } else {
+                        // Otherwise, mark it as favourite
+
+                        const response = await fetch(
+                          `http://localhost:3000/notes/favourite/${note._id}`,
+                          {
+                            method: "POST",
+                            headers: {
+                              "Content-Type": "application/json",
+                              Authorization: `Bearer ${localStorage.getItem(
+                                "token"
+                              )}`,
+                            },
+                          }
+                        );
+                        const data = await response.json();
+
+                        if (
+                          data.message === "unauthorized" ||
+                          data.message === "jwt expired"
+                        ) {
+                          localStorage.removeItem("token");
+                          window.location.href = "/Signin";
+                        }
+                        setNotes((prevNotes) =>
+                          prevNotes.map((n) =>
+                            n._id === note._id ? { ...n, favourite: true } : n
+                          )
+                        );
+                      }
+                    } catch (error) {
+                      console.error("Error toggling favourite:", error);
+                    }
+                  }}
+                  className="cursor-pointer hover:text-yellow-600"
+                >
+                  <FaStar
+                    className={
+                      note.favourite ? "text-yellow-500" : "text-gray-40"
+                    }
+                  />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    copyNote(note.text);
+                  }}
+                  className="cursor-pointer text-blue-500 hover:text-blue-600  hover:border-r-violet-500  hover:border-4"
+                >
+                  <FaRegCopy />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    speakText(note.text);
+                  }}
+                  className="cursor-pointer text-green-500 hover:text-green-600 hover:border-r-violet-500  hover:border-4"
+                >
+                  <FiVolume2 />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteNote(note._id);
+                  }}
+                  className="cursor-pointer text-red-500 hover:text-red-600 hover:border-r-violet-500  hover:border-4"
+                >
+                  <FiTrash2 />
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
 
-                </div>
-              ))}
-              </div>
+        {/* T Create Note Button at Bottom Center */}
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2">
+          <button
+            onClick={() => setShowNewNoteModal(true)}
+            className="px-6 py-3 bg-blue-500 text-white rounded-lg shadow-xl"
+          >
+            Create Note
+          </button>
+        </div>
+      </main>
 
-              {/* T Create Note Button at Bottom Center */}
-            <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2">
-              <button
-              onClick={() => setShowNewNoteModal(true)}
-              className="px-6 py-3 bg-blue-500 text-white rounded-lg shadow-xl"
-              >
-              Create Note
-              </button>
-            </div>
-            </main>
-
-            {/* New Note Creation Modal */}
+      {/* New Note Creation Modal */}
       {showNewNoteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-20 backdrop-blur-md flex justify-center items-center">
           <div className="bg-white p-6 rounded-xl shadow-2xl w-96 relative">
@@ -561,9 +671,7 @@ const [showFavourites, setShowFavourites] = useState(false);
               className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
               rows="4"
               value={newNote.text}
-              onChange={(e) =>
-                setNewNote({ ...newNote, text: e.target.value })
-              }
+              onChange={(e) => setNewNote({ ...newNote, text: e.target.value })}
             ></textarea>
             {/* Image add option as plus sign */}
             <div className="mt-3 flex items-center">
@@ -602,7 +710,9 @@ const [showFavourites, setShowFavourites] = useState(false);
                 </button>
               )}
               {isRecording && (
-                <span className="text-sm ml-2">Recording: {recordingTime}s</span>
+                <span className="text-sm ml-2">
+                  Recording: {recordingTime}s
+                </span>
               )}
             </div>
             {newNote.transcription && (
@@ -655,7 +765,9 @@ const [showFavourites, setShowFavourites] = useState(false);
             {!isEditing ? (
               // Read-only mode.
               <div>
-                <h2 className="text-xl font-bold text-gray-800">{selectedNote.title}</h2>
+                <h2 className="text-xl font-bold text-gray-800">
+                  {selectedNote.title}
+                </h2>
                 <p className="mt-2 text-gray-600">{selectedNote.text}</p>
                 {selectedNote.audio && (
                   <div className="mt-2">
@@ -755,7 +867,9 @@ const [showFavourites, setShowFavourites] = useState(false);
                     </button>
                   )}
                   {isRecording && (
-                    <span className="text-sm ml-2">Recording: {recordingTime}s</span>
+                    <span className="text-sm ml-2">
+                      Recording: {recordingTime}s
+                    </span>
                   )}
                 </div>
                 {selectedNote.audio && selectedNote.transcription && (
@@ -779,12 +893,7 @@ const [showFavourites, setShowFavourites] = useState(false);
                 <button
                   className="mt-4 w-full px-4 py-2 bg-green-500 text-white rounded-lg"
                   onClick={() => {
-                    setNotes(
-                      notes.map((note) =>
-                        note.id === selectedNote.id ? selectedNote : note
-                      )
-                    );
-                    setIsEditing(false);
+                    updateNote(selectedNote._id);
                   }}
                 >
                   Save

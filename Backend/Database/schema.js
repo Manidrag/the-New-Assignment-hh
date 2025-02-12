@@ -4,7 +4,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-mongoose.connect('mongodb+srv://mani:yUo5tEJNJqFmfLl5@cluster0.93ngq.mongodb.net/The_HHH', {
+mongoose.connect('mongodb+srv://mani:yUo5tEJNJqFmfLl5@cluster0.93ngq.mongodb.net/The_Ynotes', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 }).then(() => {
@@ -31,7 +31,7 @@ const noteSchema = new Schema({
   },
   text: {
     type: String,
-    required: true
+    required: false
   },
   transcription: {
     type: String,
@@ -43,11 +43,11 @@ const noteSchema = new Schema({
   },
   image: {
     type: String, // Use Buffer to store binary data
-    required: true
+    required: false
   },
   audio: {
     type: String, // Use Buffer to store binary data
-    required: true
+    required: false
   },
   update: {
     type: Date,
@@ -56,6 +56,10 @@ const noteSchema = new Schema({
   created: {
     type: Date,
     default: Date.now
+  },
+  user:{
+    type: String,
+    ref: 'User'
   }
 });
 
