@@ -1,90 +1,81 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 export function Signup() {
-  let [email, setEmail] = useState("");
-   let [password, setPassword] = useState("");
-   const handleSubmit = async (e) => {
-      e.preventDefault();
-      try{
-         
-          const res = await fetch("http://localhost:3000/signup", {
-              method: "POST",
-              headers: {
-                  "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                  email,
-                  password,
-              }),
-            });
-           
-            const data = await res.json();
-            
-            if (data.message === "user created") {
-                console.log("success");
-                alert("user Created")
-                window.location.href = "/Signin";
-            }
-        }
-        catch (e) {
-            console.log(e);
-        }
-    };
-         
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await fetch("http://localhost:3000/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      setLoading(false);
+      if (data.message === "user created") {
+        alert("User created successfully!");
+        window.location.href = "/signin";
+      } else {
+        alert(data.message);
+      }
+    } catch (error) {
+      setLoading(false);
+      console.error(error);
+    }
+  };
+
   return (
-    <>
-      <div class="w-full max-w-sm p-4 bg-white border border-gray-200 rounded-lg shadow-sm sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700">
-        <form class="space-y-6" onSubmit={handleSubmit}>
-          <h5 class="text-xl font-medium text-gray-900 dark:text-white">
-            Sign Up for Chat AI
-          </h5>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="w-full max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow-lg transform transition duration-300 hover:scale-105">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <h2 className="text-2xl font-bold text-center text-gray-900">Sign Up</h2>
           <div>
-            <label
-              for="email"
-              class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-            >
-              Your email
+            <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-700">
+              Your Email
             </label>
             <input
               type="email"
-              name="email"
               id="email"
               value={email}
-              onChange={(e)=>setEmail(e.target.value)}
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-              placeholder="name@company.com"
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="name@example.com"
               required
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>
           <div>
-            <label
-              for="password"
-              class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-            >
-              Your password
+            <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-700">
+              Your Password
             </label>
             <input
               type="password"
-              name="password"
               id="password"
-              placeholder="••••••••"
               value={password}
-              onChange={(e)=>setPassword(e.target.value)}
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
               required
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
-          </div>
-          <div class="flex items-start">
-            <div class="flex items-start"></div>
           </div>
           <button
             type="submit"
-            class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            className="w-full py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
-            Sign UP
+            {loading ? "Signing Up..." : "Sign Up"}
           </button>
+          <p className="text-sm text-center text-gray-600">
+            Already have an account?{" "}
+            <Link to="/signin" className="text-blue-600 hover:underline">
+              Sign In
+            </Link>
+          </p>
         </form>
       </div>
-    </>
+    </div>
   );
 }

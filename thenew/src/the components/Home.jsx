@@ -13,7 +13,7 @@ import { FaStar } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
 import { FiUser } from "react-icons/fi";
 import { hover } from "framer-motion";
-
+import {motion} from "framer-motion";
 export function Home() {
   if (!localStorage.getItem("token")) {
     window.location.href = "/Signin";
@@ -384,14 +384,18 @@ export function Home() {
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
-      <aside className="w-64 fixed top-0 left-0 h-screen  bg-white p-4 shadow-lg overflow-y-auto">
-        <h2 className="text-2xl font-bold text-gray-800">AI Notes</h2>
-        <nav className="mt-6">
+      <motion.aside 
+      initial={{ y: -50, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className="w-64 fixed top-0 left-0 h-screen  bg-white p-4 shadow-lg overflow-y-auto transition-all duration-400">
+        <h2 className="text-xl font-bold text-center">AI Notes</h2>
+        <nav className="mt-6 space-y-4">
           <a
             href="/Home"
-            className={`block py-2 px-3 mt-2 rounded-lg cursor-pointer hover:bg-purple-200 ${
+            className={`block py-2 px-3 rounded-lg bg-purple-100 text-center transition-colors hover:bg-purple-200 ${
               showFavourites
-                ? "bg-purple-50 text-white"
+                ? "bg-purple-50 text-blue-100"
                 : "bg-purple-400 text-gray-700"
             }'`}
           >
@@ -399,10 +403,10 @@ export function Home() {
           </a>
           <NavLink
             onClick={() => setShowFavourites(true)}
-            className={`block py-2 px-3 rounded-lg cursor-pointer hover:bg-purple-200 ${
+            className={`block py-2 px-3 rounded-lg bg-purple-100 text-center transition-colors hover:bg-purple-200 ${
               !showFavourites
-                ? "bg-purple-50 text-blue-100"
-                : "bg-purple-400 text-gray-700"
+                ? "bg-purple-50 text-blue-400"
+                : "bg-purple-500 text-gray-700"
             }`}
           >
             🌟 Favourite
@@ -410,10 +414,10 @@ export function Home() {
         </nav>
 
         {/* /// */}
-      </aside>
+      </motion.aside>
 
       {/* Main Content */}
-      <main className="ml-64 p-6 bg-gray-10 h-screen overflow-y-auto">
+      <main className="mflex-1 ml-64 p-6 overflow-y-auto">
         {/* Navbar */}
         <div className="flex justify-between items-center mb-6 bg-white p-4 shadow-lg rounded-lg  w-full z-10 gap-10">
           <div className="relative w-full">
