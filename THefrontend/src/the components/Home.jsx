@@ -122,9 +122,7 @@ export function Home() {
     }
   };
 
-  // -------------------------------
-  // Other Utility Functions
-  // -------------------------------
+  
   const copyNote = (text) => {
     navigator.clipboard.writeText(text);
     alert("Note copied!");
