@@ -147,9 +147,7 @@ export function Home() {
     window.speechSynthesis.speak(speech);
   };
 
-  // -------------------------------
-  // API: Create Note Function
-  // -------------------------------
+ 
   const createNote = async () => {
     if (!newNote.title) {
       alert("Title is required");
