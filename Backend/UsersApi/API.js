@@ -39,8 +39,6 @@ app.post(
   ]),
   async function (req, res) {
     try {
-     
-
       // Ensure required fields exist
       if (!req.body.title || !req.body.text) {
         return res.status(400).json({ message: "Title and text are required" });
@@ -57,8 +55,8 @@ app.post(
         title: req.body.title,
         text: req.body.text,
         transcription: req.body.transcription,
-        image: imagePath ? `http://localhost:3000/${imagePath}` : null, // Set to `null` if no image
-        audio: audioPath ? `http://localhost:3000/${audioPath}` : null, // Set to `null` if no audio
+        image: imagePath ? `https://zyrr6w-3000.csb.app/${imagePath}` : null, // Set to `null` if no image
+        audio: audioPath ? `https://zyrr6w-3000.csb.app/${audioPath}` : null, // Set to `null` if no audio
         user: req.data,
       });
       await note.save();
@@ -69,19 +67,24 @@ app.post(
   }
 );
 
-app.post("/signup", function (req, res) {
-  req.body.email;
-  req.body.password;
+app.post("/signup", async function (req, res) {
   if (req.body.email && req.body.password) {
-    const user = new User({
-      email: req.body.email,
-      password: req.body.password,
-    });
-    user.save().then(() => {
-      res.json({ message: "user created" });
-    });
+    const datas = await User.findOne({ email: req.body.email });
+    console.log(datas);
+    if (!datas) {
+      const user = new User({
+        email: req.body.email,
+        password: req.body.password,
+      });
+      user.save().then(() => {
+        res.json({ message: "user created" });
+      });
+    } else {
+      res.json({ message: "user already exist" });
+    }
   }
-}); //b
+});
+
 app.post("/login", async function (req, res) {
   if (req.body.email) {
     const datass = await User.findOne({ email: req.body.email });
@@ -158,8 +161,6 @@ app.put(
   ]),
   async function (req, res) {
     try {
-     
-
       let note = await Note.findById(req.params.id);
       if (!note) {
         return res.status(404).json({ message: "Note not found" });
@@ -172,14 +173,14 @@ app.put(
       };
 
       if (req.files?.image) {
-        updateFields.image = `http://localhost:3000/${req.files.image[0].path.replace(
+        updateFields.image = `https://zyrr6w-3000.csb.app/${req.files.image[0].path.replace(
           /\\/g,
           "/"
         )}`;
       }
 
       if (req.files?.audio) {
-        updateFields.audio = `http://localhost:3000/${req.files.audio[0].path.replace(
+        updateFields.audio = `https://t82nkr-3000.csb.app/${req.files.audio[0].path.replace(
           /\\/g,
           "/"
         )}`;
@@ -191,7 +192,6 @@ app.put(
 
       res.json({ message: "Note updated", note });
     } catch (e) {
-    
       res.status(500).json({ message: e.message });
     }
   }

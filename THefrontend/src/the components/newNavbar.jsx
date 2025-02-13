@@ -9,7 +9,7 @@ export function NotesDashboard() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
-      fetch("http://localhost:3000/Home", {
+      fetch("https://zyrr6w-3000.csb.app/Home", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

@@ -42,11 +42,11 @@ const noteSchema = new Schema({
     default: false
   },
   image: {
-    type: String, // Use Buffer to store binary data
+    type: String, 
     required: false
   },
   audio: {
-    type: String, // Use Buffer to store binary data
+    type: String, 
     required: false
   },
   update: {

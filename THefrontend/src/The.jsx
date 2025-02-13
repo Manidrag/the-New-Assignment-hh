@@ -3,8 +3,7 @@ import { useState } from 'react'
 import './index.css'
 import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom'
 
-import { Home } from './the components/Home.jsx'
-import {  Sun} from './the components/thefavourite.jsx'
+import { Home } from './the components/Home.jsx'//t
 import { Signup } from './the components/signup'
 import { Signin } from './the components/Signin.jsx'
 import {NotesDashboard} from './the components/newNavbar.jsx'
@@ -28,12 +27,7 @@ const BrowserRouter = createBrowserRouter([
         
             path: '/Home/',
             element: <Home />,
-            children: [
-                {
-                    path: 'favourite',
-                    element: <Sun/>
-                }
-            ]
+            
         }
     
 ], {

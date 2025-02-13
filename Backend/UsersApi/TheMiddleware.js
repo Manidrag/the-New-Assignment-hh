@@ -17,7 +17,7 @@ async function Authenticator(req, res, next) {
       const decode = jwt.verify(token,"secret");
       if (decode) {
         req.data=decode;
-        console.log(decode)
+        
         next();
       }
     } }else

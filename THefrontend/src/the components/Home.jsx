@@ -55,7 +55,7 @@ export function Home() {
     const fetchNotes = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:3000/notes", {
+        const response = await fetch("https://zyrr6w-3000.csb.app/notes", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -130,7 +130,7 @@ export function Home() {
 
   const deleteNote = async (id) => {
     try {
-      const response = await fetch(`http://localhost:3000/notes/${id}`, {
+      const response = await fetch(`https://zyrr6w-3000.csb.app/notes/${id}`, {
         method: "DELETE",
       });
       const data = await response.json();
@@ -174,7 +174,7 @@ export function Home() {
 
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:3000/notes/add", {
+      const response = await fetch("https://zyrr6w-3000.csb.app/notes/add", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -228,7 +228,7 @@ export function Home() {
 
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:3000/notes/${id}`, {
+      const response = await fetch(`https://zyrr6w-3000.csb.app/notes/${id}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -368,9 +368,7 @@ export function Home() {
     return 0;
   });
 
-  // -------------------------------
-  // JSX Rendering
-  // -------------------------------
+  
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
@@ -406,7 +404,7 @@ export function Home() {
         {/* /// */}
       </motion.aside>
 
-      {/* Main Content */}
+      {/* Main Content  starts From here*/}
       <main className="mflex-1 ml-64 p-6 overflow-y-auto">
         {/* Navbar */}
         <div className="flex justify-between items-center mb-6 bg-white p-4 shadow-lg rounded-lg  w-full z-10 gap-10">
@@ -465,7 +463,7 @@ export function Home() {
           </div>
         </div>
 
-        {/* Notes Grid */}
+        {/* Notes Grid  Here notes card */}
         <div className="flex flex-wrap gap-2">
           {sortedNotes.map((note) => (
             <div
@@ -523,7 +521,7 @@ export function Home() {
                         // If already favourite, send request to remove it
 
                         const response = await fetch(
-                          `http://localhost:3000/notes/unfavourite/${note._id}`,
+                          `https://zyrr6w-3000.csb.app/notes/unfavourite/${note._id}`,
                           {
                             method: "POST",
                             headers: {
@@ -554,7 +552,7 @@ export function Home() {
                         // Otherwise, mark it as favourite
 
                         const response = await fetch(
-                          `http://localhost:3000/notes/favourite/${note._id}`,
+                          `https://zyrr6w-3000.csb.app/notes/favourite/${note._id}`,
                           {
                             method: "POST",
                             headers: {
@@ -743,7 +741,7 @@ export function Home() {
         </div>
       )}
 
-      {/* Fullscreen Note Viewer / Editor Modal */}
+      {/* Fullscreen Note Viewer / Editor  */}
       {selectedNote && (
         <div className="fixed inset-0 bg-black bg-opacity-20 backdrop-blur-md flex justify-center items-center">
           <div className="bg-white p-6 rounded-xl shadow-2xl w-96 relative">
@@ -800,7 +798,7 @@ export function Home() {
                 </button>
               </div>
             ) : (
-              // Edit mode.
+              // Edit mode on the fullScreen.
               <div>
                 <input
                   type="text"

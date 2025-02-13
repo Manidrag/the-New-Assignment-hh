@@ -10,7 +10,7 @@ export function Signin() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:3000/login", {
+      const res = await fetch("https://zyrr6w-3000.csb.app/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
