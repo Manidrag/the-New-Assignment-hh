@@ -1,24 +1,40 @@
 Note App Overview
 
+<<<<<<< HEAD
+
 ## Installation:
 
 Run
 add the databse Connect link in database schema
 
+#Run in Backend folder
+
 {npm install }
-{node Api.js}// please goto library first.
+{node Api.js}
 
-in both the backend and frontend folders.
-In the frontend folder,
-{npm install }
+=======
 
-{npm install -g vite}
+---
+>In# the frontend folder,
+{n
+pm\*-- install }
 
-to Run Front end= {npm run dev}
+{n\*--pm install -g vite}
+
+to Run Front end= {\*--npm run dev}
 
 ---
 
-Database & Storage:
+<# <<<<<< HEAD
+=
+{npm install
+run npm install -g vite,
+npm run dev
+}
+----
+---
+>>> > >   3 4 880a42682719f730a7cabccc67ba8710693234
+Data> > > > > > > base & Storage:
 
 A public MongoDB is currently used for data input and output.
 Images and audio files are stored locally in the backend folder (upload).
