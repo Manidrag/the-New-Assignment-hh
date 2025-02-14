@@ -5,7 +5,7 @@ Installation:
 Run RH in Backend folder
 
 {npm install 
- node API.js} go to Use Api directory rr
+ node API.js} go to Use Api directory rrhh
 
 in both the backend and frontend folders.
 In the frontend folder, 
