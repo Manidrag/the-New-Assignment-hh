@@ -2,14 +2,18 @@ Note App Overview
 
 Installation:
 ------------------------------------------------------------------------
-Run 
+Run RH in Backend folder
 
-{npm install }
+{npm install 
+ node API.js} go to Use Api directory rr
 
 in both the backend and frontend folders.
 In the frontend folder, 
 
-{run npm install -g vite}
+{npm install
+run npm install -g vite,
+npm run dev
+}
 -------------------------------------------------------------------------
 Database & Storage:
 
