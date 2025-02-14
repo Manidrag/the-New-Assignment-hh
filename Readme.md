@@ -1,16 +1,23 @@
 Note App Overview
 
-Installation:
-------------------------------------------------------------------------
-Run 
+## Installation:
+
+Run
+add the databse Connect link in database schema
 
 {npm install }
+{node Api.js}// please goto library first.
 
 in both the backend and frontend folders.
-In the frontend folder, 
+In the frontend folder,
+{npm install }
 
-{run npm install -g vite}
--------------------------------------------------------------------------
+{npm install -g vite}
+
+to Run Front end= {npm run dev}
+
+---
+
 Database & Storage:
 
 A public MongoDB is currently used for data input and output.
