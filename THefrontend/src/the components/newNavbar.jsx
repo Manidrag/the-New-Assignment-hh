@@ -1,18 +1,15 @@
 import { useEffect, useState } from "react";
-import { FiSearch, FiUser } from "react-icons/fi";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 
 export function NotesDashboard() {
   const [user, setUser] = useState({ name: "Username", isSignedIn: false });
-  const [menuOpen, setMenuOpen] = useState(false);
-
+  const location = useLocation();
+ 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
-      fetch("http://localhost:3000/Home", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      fetch("https://the-backend-by8h.onrender.com/Home", {
+        headers: { Authorization: `Bearer ${token}` },
       })
         .then((res) => res.json())
         .then((data) => {
@@ -22,75 +19,96 @@ export function NotesDashboard() {
     }
   }, []);
 
+  // Check if current route is for authentication
+  const isAuthRoute =
+    location.pathname.toLowerCase() === "/signin" ||
+    location.pathname.toLowerCase() === "/signup";
+
+  if (isAuthRoute) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-700 to-purple-700 flex flex-col">
+        {/* AI Notes Heading at the top */}
+        <header className="py-8 text-center">
+          <h1 className="text-4xl font-bold text-white">AI Notes</h1>
+        </header>
+        {/* Full-screen authentication view */}
+        <div className="flex-grow flex items-center justify-center px-4">
+          <div className="w-full max-w-md bg-white rounded-xl shadow-2xl p-8">
+            <Outlet />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Default dashboard view (non-auth routes)
   return (
-    <div className="flex h-screen bg-gray-100">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white p-4 shadow-md fixed top-0 left-0 h-screen overflow-y-auto transition-transform duration-300">
-        <h2 className="text-xl font-bold text-center">AI Notes</h2>
-        <nav className="mt-6 space-y-4">
-          <NavLink
-            to="/Signin"
-            className="block py-2 px-3 rounded-lg bg-purple-100 text-center transition-colors hover:bg-purple-200"
-          >
-            Login
-          </NavLink>
-          <NavLink
-            to="/SignUp"
-            className="block py-2 px-3 rounded-lg bg-purple-100 text-center transition-colors hover:bg-purple-200"
-          >
-            Signup
-          </NavLink>
-        </nav>
-      </aside>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-500 to-pink-500 flex flex-col">
+      {/* Header */}
+      <header className="py-12 text-center px-4">
+        <h2 className="text-5xl md:text-6xl font-extrabold text-white drop-shadow-lg">
+          AI Notes
+        </h2>
+        <p className="mt-4 text-lg md:text-xl text-white/90">
+          This is a demo project. Do not put sensitive information.
+        </p>
+      </header>
 
       {/* Main Content */}
-      <main className="flex-1 ml-64 p-6 overflow-y-auto">
-        {/* Navbar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between mb-6 bg-white p-4 shadow-md rounded-lg transition-all duration-300">
-          <div className="relative w-full sm:w-1/2 mb-4 sm:mb-0">
-            <FiSearch className="absolute left-3 top-2.5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search"
-              className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors"
-            />
-          </div>
-          <div className="flex items-center space-x-4">
-            <button className="px-3 py-1 bg-gray-200 rounded-lg transition-colors hover:bg-gray-300">
-              Sort
-            </button>
-            <div className="relative">
-              <button
-                onClick={() => setMenuOpen((prev) => !prev)}
-                className="flex items-center px-3 py-1 border rounded-lg transition-colors hover:bg-gray-200"
+      <main className="flex-grow flex flex-col items-center justify-center px-4">
+        <div className="max-w-5xl w-full">
+          <div className="flex flex-col md:flex-row gap-10 justify-center">
+            {/* Sign In Card */}
+            <div className="w-full md:w-96 bg-white/90 backdrop-blur-none md:backdrop-blur-md p-10 border border-white/30 rounded-2xl shadow-2xl transform transition duration-500 hover:scale-105">
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">
+                Sign In
+              </h3>
+              <p className="text-sm text-gray-600 mb-6">
+                Welcome back! Sign in to access your notes and stay organized.
+              </p>
+              <NavLink
+                to="/signin"
+                className="block text-center py-3 px-4 text-white bg-blue-600 rounded-lg font-medium text-base hover:bg-blue-700 transition-colors duration-300"
               >
-                <FiUser className="text-gray-600 mr-2" /> {user.name}
-              </button>
-              {menuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg p-2 z-10 transition-all duration-300">
-                  <NavLink
-                    to="/Signin"
-                    className="block px-4 py-2 hover:bg-gray-100"
-                  >
-                    Login
-                  </NavLink>
-                  <NavLink
-                    to="/SignUp"
-                    className="block px-4 py-2 hover:bg-gray-100"
-                  >
-                    Signup
-                  </NavLink>
-                </div>
-              )}
+                Sign In
+              </NavLink>
             </div>
+            {/* Sign Up Card */}
+            <div className="w-full md:w-96 bg-white/90 backdrop-blur-none md:backdrop-blur-md p-10 border border-white/30 rounded-2xl shadow-2xl transform transition duration-500 hover:scale-105">
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">
+                Sign Up
+              </h3>
+              <p className="text-sm text-gray-600 mb-6">
+                New here? Create an account to start managing your notes.
+              </p>
+              <NavLink
+                to="/signup"
+                className="block text-center py-3 px-4 text-white bg-green-600 rounded-lg font-medium text-base hover:bg-green-700 transition-colors duration-300"
+              >
+                Sign Up
+              </NavLink>
+            </div>
+          </div>
+
+          {/* Additional Content */}
+          <div className="mt-12 bg-white/80 backdrop-blur-none md:backdrop-blur-md p-8 rounded-2xl shadow-lg">
+            <h4 className="text-xl font-bold text-gray-800 mb-3">
+              About AI Notes
+            </h4>
+            <p className="text-gray-700 text-sm md:text-base">
+              AI Notes is a simple, elegant note-taking app designed with modern UI and responsive components. Whether you're on a mobile device or a desktop, enjoy a seamless experience with quick access to your notes. Explore the features, manage your ideas, and stay organized—all with a touch of style.
+            </p>
           </div>
         </div>
 
-        {/* Content Outlet */}
-        <div className="grid grid-cols-1 gap-4">
-          <Outlet />
-        </div>
+        
+       
       </main>
+
+      {/* Footer */}
+      <footer className="py-4 text-center text-white text-sm">
+        &copy; {new Date().getFullYear()} AI Notes. All rights reserved.
+      </footer>
     </div>
   );
 }
