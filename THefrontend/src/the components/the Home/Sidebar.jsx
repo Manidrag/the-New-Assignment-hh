@@ -29,7 +29,7 @@ export function Sidebar({ showFavourites, setShowFavourites,newdata }) {
         <nav className="mt-6 px-2">
           <div className="space-y-2">
             <NavLink
-              to="/Home"
+              to="/home"
               className={({ isActive }) =>
                 `flex items-center space-x-3 py-3 px-4 rounded-lg transition duration-200 ease-in-out
                 ${

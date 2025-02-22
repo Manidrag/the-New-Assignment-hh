@@ -8,7 +8,7 @@ export function NotesDashboard() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
-      fetch("https://the-backend-by8h.onrender.com/Home", {
+      fetch("https://the-backend-by8h.onrender.com/home", {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then((res) => res.json())

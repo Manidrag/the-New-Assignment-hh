@@ -89,7 +89,7 @@ export function Navbar({
           >
             <div className="py-1">
              <NavLink
-                           to="/Home"
+                           to=""
                            className=
                              "flex items-center space-x-3 py-3 px-4 rounded-lg transition duration-200 ease-in-out"
                            

@@ -24,7 +24,7 @@ export function Signin() {
       if (data.message === "login success") {
         localStorage.setItem("token", data.token);
         localStorage.setItem("name", data.name);
-        window.location.href = "/Home";
+        window.location.href = "/home";
       } else {
         alert(data.message);
       }
